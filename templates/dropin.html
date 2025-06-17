@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Drop-in Integration</title>
+    <link rel="stylesheet" href="static/css/style.css" />
+
+    <script
+      src="https://checkoutshopper-test.cdn.adyen.com/checkoutshopper/sdk/6.6.0/adyen.js"
+      integrity="sha384-Oa2agnE48SFtDpzmEK8mbhbmEA1X4WH6afLBbypUhFU8oDhJWAIGvLQTBrqgls4A"
+      crossorigin="anonymous"
+    ></script>
+
+    <link
+      rel="stylesheet"
+      href="https://checkoutshopper-test.cdn.adyen.com/checkoutshopper/sdk/6.6.0/adyen.css"
+      integrity="sha384-UAD/QSv1wQyfA60svLYxJ0OJAPl9TpkksO+HEOUX8YJcD+MYzNmn+q4XL7YBeHcr"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Drop-in Integration</h1>
+      <p>This integration uses Adyen's pre-built UI for accepting payments.</p>
+      <div id="dropin-container"></div>
+    </div>
+    <div>
+      <label for="countries">Choose a country:</label>
+      <select id="countries" name="countries">
+        <option value="DE" data-currency="EUR">Germany</option>
+        <option value="NL" data-currency="EUR">Netherlands</option>
+        <option value="PL" data-currency="PLN">Poland</option>
+        <option value="SE" data-currency="SEK">Sweden</option>
+        <option value="US" data-currency="USD">United States</option>
+        <option value="BE" data-currency="EUR">Belgium</option>
+      </select>
+    </div>
+    <div>
+      <button id="loadPaymentMethods">Load Payment Methods</button>
+    </div>
+
+    <a href="/">Back to Home</a>
+
+    <script>
+      document
+        .getElementById("countries")
+        .addEventListener("change", function () {
+          let selectedOption = this.options[this.selectedIndex]; 
+          let selectedValue = selectedOption.value;
+          let selectedCurrency = selectedOption.getAttribute("data-currency");
+
+          console.log("Selected value:", selectedValue);
+        console.log("Selected currency:", selectedCurrency);
+
+          fetch("/api/save-selection", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              country: selectedValue,
+              currency: selectedCurrency,
+            }),
+          })
+            .then((response) => response.json())
+            .then((data) => console.log("Server response:", data))
+            .catch((error) => console.error("Error:", error));
+        });
+    </script>
+
+    <script id="client-key" type="application/json">
+      {{ client_key|tojson }}
+    </script>
+
+    <script src="{{ url_for('static', filename='js/drop-in.js') }}"></script>
+  </body>
+</html>

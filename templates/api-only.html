@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Adyen Drop-in Integration</title>
+    <link rel="stylesheet" href="static/css/style.css">
+
+	<link rel="stylesheet"
+        href="https://checkoutshopper-test.cdn.adyen.com/checkoutshopper/sdk/6.6.0/adyen.css"
+        integrity="sha384-UAD/QSv1wQyfA60svLYxJ0OJAPl9TpkksO+HEOUX8YJcD+MYzNmn+q4XL7YBeHcr"
+        crossorigin="anonymous">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>API ONLY Integration</h1>
+    <button id="loadPaymentMethods">Load Payment Methods</button>
+    <div id="customCard-container">
+        <label>
+            <span>Card number:</span>
+            <span data-cse="encryptedCardNumber"></span>
+        </label>
+        <label>
+            <span>Expiry date:</span>
+            <span data-cse="encryptedExpiryDate"></span>
+        </label>
+        <label>
+            <span>CVV/CVC:</span>
+            <span data-cse="encryptedSecurityCode"></span>
+        </label>
+        <a href="/">Back to Home</a>
+    </div>
+    <script src="https://checkoutshopper-test.cdn.adyen.com/checkoutshopper/sdk/6.6.0/adyen.js"
+          integrity="sha384-Oa2agnE48SFtDpzmEK8mbhbmEA1X4WH6afLBbypUhFU8oDhJWAIGvLQTBrqgls4A"
+          crossorigin="anonymous"></script>
+</script>
+    <script>  function handleOnSubmit(state, component) {
+        state.isValid // True or false. Specifies if all the information that the shopper provided is valid.
+        state.data // Provides the data that you need to pass in the `/payments` call.
+        component // Provides the active component instance that called this event.
+    }
+   
+    const configuration = {
+        locale: "en_US",
+        environment: "test",
+        clientKey: "test_TX647WMLYBCOLKDZUVLN3Y6XYQ3LTF46",
+        onSubmit: handleOnSubmit
+    };
+    
+    const checkout = await AdyenCheckout(configuration);
+</script>
+
+    <script id="client-key" type="application/json">{{ client_key|tojson }}</script>
+
+    <script src="{{ url_for('static', filename='js/api-only.js') }}"></script>
+</body>
+</html>
