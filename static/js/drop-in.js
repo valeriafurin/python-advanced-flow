@@ -78,31 +78,35 @@ async function startCheckout() {
 }
 
 // === HANDLERS ===
-async function handleSubmit(state, actions) {
-  if (!state.isValid) return;
+async function handleSubmit(state, component, actions) {
+        console.info("onSubmit", state, component, actions);
+        try {
+          if (state.isValid) {
+            const { action, order, resultCode } = await fetch("/api/payments", {
+              method: "POST",
+              body: state.data ? JSON.stringify(state.data) : "",
+              headers: {
+                "Content-Type": "application/json",
+              }
+            }).then(response => response.json());
 
-  try {
-    const response = await fetch("/api/payments", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(state.data),
-    }).then((res) => res.json());
+            if (!resultCode) {
+              console.warn("reject");
+              actions.reject();
+            }
 
-    const { redirectUrl, resultCode, action, order } = response;
-
-    if (!resultCode) {
-      actions.reject();
-      return;
-    }
-
-    actions.resolve({ resultCode, action, order });
-
-    if (redirectUrl) window.location.href = redirectUrl;
-  } catch (error) {
-    console.error("Submit Error:", error);
-    actions.reject();
-  }
-}
+            actions.resolve({
+              resultCode,
+              action,
+              order
+            });
+          }
+        } catch (error) {
+          console.error(error);
+          actions.reject();
+        }
+      }
+      
 
 async function handleAdditionalDetails(state, actions) {
   try {
