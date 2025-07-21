@@ -108,7 +108,7 @@ async function handleSubmit(state, component, actions) {
       }
       
 
-async function handleAdditionalDetails(state, actions) {
+async function handleAdditionalDetails(state, component, actions) {
   try {
     const response = await fetchWithTimeout("/api/payments/details", {
       method: "POST",
