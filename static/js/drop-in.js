@@ -6,7 +6,7 @@ const countryDropdown = document.getElementById("countries");
 
 // === CONSTANTS ===
 const clientKey = "test_TX647WMLYBCOLKDZUVLN3Y6XYQ3LTF46";
-const { AdyenCheckout, Dropin } = window.AdyenWeb;
+const { AdyenCheckout, Dropin, SepaDirectDebit } = window.AdyenWeb;
 
 // === UTILITIES ===
 const renderResultTemplate = (message) => {
@@ -48,7 +48,7 @@ async function startCheckout() {
       environment: "test",
       countryCode: selectedCountry,
       locale: "en_US",
-      amount: { value: 12300, currency: "EUR" },
+      amount: { value: 1010, currency: "EUR" },
       showPayButton: true,
       translations: {
         "en-US": {

@@ -18,18 +18,19 @@ def make_payment(payload):
     adyen = get_adyen_client()
 
     request_data = {
-        "amount": payload.get("amount", {"currency": "EUR", "value": 1000}),
+        "amount": payload.get("amount", {"currency": "EUR", "value": 1010}),
         "reference": f"Reference-{uuid.uuid4()}",
         "paymentMethod": payload["paymentMethod"],
         "returnUrl": "http://localhost:5000/result/return",
         "merchantAccount": ADYEN_MERCHANT_ACCOUNT,
         "channel": "Web",
         "browserInfo": payload.get("browserInfo", {}),
-        "shopperReference": "TestShopperOne",
+        "shopperReference": "TestShopperOneTwoTwo",
         "shopperInteraction": "Ecommerce",
         "storePaymentMethod": True,
         "recurringProcessingModel": "CardOnFile",
-        "origin": "http://localhost:5000"
+        "origin": "http://localhost:5000",
+        # "captureDelayHours": 2
     }
 
     if payload.get("billingAddress"):
