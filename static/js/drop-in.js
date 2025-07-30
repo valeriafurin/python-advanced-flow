@@ -6,7 +6,7 @@ const countryDropdown = document.getElementById("countries");
 
 // === CONSTANTS ===
 const clientKey = "test_TX647WMLYBCOLKDZUVLN3Y6XYQ3LTF46";
-const { AdyenCheckout, Dropin, SepaDirectDebit } = window.AdyenWeb;
+const { AdyenCheckout, Dropin, SepaDirectDebit, Klarna } = window.AdyenWeb;
 
 // === UTILITIES ===
 const renderResultTemplate = (message) => {
@@ -22,24 +22,24 @@ const fetchWithTimeout = (url, options, timeout = 5000) =>
     ),
   ]);
 
-// === EVENT LISTENERS ===
-countryDropdown.addEventListener("change", () => {
-  const selectedOption = countryDropdown.options[countryDropdown.selectedIndex];
-  console.log("Selected country:", selectedOption.value);
-  console.log("Currency:", selectedOption.getAttribute("data-currency"));
-});
-
 payButton.addEventListener("click", startCheckout);
 
 // === MAIN FUNCTION: Checkout Setup ===
 async function startCheckout() {
   try {
     const selectedCountry = countryDropdown.value;
+    const selectedCurrency =
+      countryDropdown.options[countryDropdown.selectedIndex].getAttribute(
+        "data-currency"
+      );
 
     const paymentMethodsResponse = await fetch("/api/paymentMethods", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ countryCode: selectedCountry }),
+      body: JSON.stringify({
+        countryCode: selectedCountry,
+        currency: selectedCurrency,
+      }),
     }).then((res) => res.json());
 
     const checkout = await AdyenCheckout({
@@ -48,7 +48,7 @@ async function startCheckout() {
       environment: "test",
       countryCode: selectedCountry,
       locale: "en_US",
-      amount: { value: 1010, currency: "EUR" },
+      amount: { value: 1010, currency: selectedCurrency },
       showPayButton: true,
       translations: {
         "en-US": {
@@ -58,8 +58,7 @@ async function startCheckout() {
       onSubmit: handleSubmit,
       onPaymentCompleted: (result) =>
         handleOnPaymentCompleted(result.resultCode),
-      onPaymentFailed: (result) =>
-        handleOnPaymentFailed(result.resultCode),
+      onPaymentFailed: (result) => handleOnPaymentFailed(result.resultCode),
       onChange: (state) => console.log("onChange:", state),
       onError: handleError,
       onAdditionalDetails: handleAdditionalDetails,
@@ -70,7 +69,6 @@ async function startCheckout() {
     });
 
     dropin.mount("#dropin-container");
-
   } catch (error) {
     console.error("Checkout Error:", error);
     alert("An error occurred. See console for details.");
@@ -79,34 +77,48 @@ async function startCheckout() {
 
 // === HANDLERS ===
 async function handleSubmit(state, component, actions) {
-        console.info("onSubmit", state, component, actions);
-        try {
-          if (state.isValid) {
-            const { action, order, resultCode } = await fetch("/api/payments", {
-              method: "POST",
-              body: state.data ? JSON.stringify(state.data) : "",
-              headers: {
-                "Content-Type": "application/json",
-              }
-            }).then(response => response.json());
+  console.info("onSubmit", JSON.stringify(state));
+  try {
+    if (state.isValid) {
+      const selectedCountry = countryDropdown.value;
+      const selectedCurrency = countryDropdown.options[countryDropdown.selectedIndex].getAttribute(
+        "data-currency"
+      );
+      state.countryCode = selectedCountry;
+      state.amount = { currency: selectedCurrency, value: 1010 };
+      state.paymentMethod = state.data.paymentMethod
 
-            if (!resultCode) {
-              console.warn("reject");
-              actions.reject();
-            }
+      const payload = {
+        ...state
+      };
 
-            actions.resolve({
-              resultCode,
-              action,
-              order
-            });
-          }
-        } catch (error) {
-          console.error(error);
-          actions.reject();
-        }
-      }
+      console.log("payload", payload);
       
+      const { action, order, resultCode } = await fetch("/api/payments", {
+        method: "POST",
+        // body: state.data ? JSON.stringify(state.data) : "",
+        body: JSON.stringify(payload),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }).then((response) => response.json());
+
+      if (!resultCode) {
+        console.warn("reject");
+        actions.reject();
+      }
+
+      actions.resolve({
+        resultCode,
+        action,
+        order,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    actions.reject();
+  }
+}
 
 async function handleAdditionalDetails(state, component, actions) {
   try {
