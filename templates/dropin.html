@@ -36,6 +36,8 @@
         <option value="SE" data-currency="SEK">Sweden</option>
         <option value="US" data-currency="USD">United States</option>
         <option value="BE" data-currency="EUR">Belgium</option>
+        <option value="PH" data-currency="PHP">Philipines</option>
+        <option value="MY" data-currency="MYR">Malaysia</option>
       </select>
     </div>
     <div>
@@ -48,12 +50,12 @@
       document
         .getElementById("countries")
         .addEventListener("change", function () {
-          let selectedOption = this.options[this.selectedIndex]; 
+          let selectedOption = this.options[this.selectedIndex];
           let selectedValue = selectedOption.value;
           let selectedCurrency = selectedOption.getAttribute("data-currency");
 
           console.log("Selected value:", selectedValue);
-        console.log("Selected currency:", selectedCurrency);
+          console.log("Selected currency:", selectedCurrency);
 
           fetch("/api/save-selection", {
             method: "POST",
