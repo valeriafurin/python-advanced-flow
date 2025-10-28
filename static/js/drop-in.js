@@ -6,7 +6,14 @@ const countryDropdown = document.getElementById("countries");
 
 // === CONSTANTS ===
 const clientKey = "test_TX647WMLYBCOLKDZUVLN3Y6XYQ3LTF46";
-const { AdyenCheckout, Dropin, SepaDirectDebit, Klarna } = window.AdyenWeb;
+const {
+  AdyenCheckout,
+  Dropin,
+  SepaDirectDebit,
+  Klarna,
+  RatePay,
+  OnlineBankingPL,
+} = window.AdyenWeb;
 
 // === UTILITIES ===
 const renderResultTemplate = (message) => {
@@ -48,7 +55,7 @@ async function startCheckout() {
       environment: "test",
       countryCode: selectedCountry,
       locale: "en_US",
-      amount: { value: 1010, currency: selectedCurrency },
+      amount: { value: 5995, currency: selectedCurrency },
       showPayButton: true,
       translations: {
         "en-US": {
@@ -64,9 +71,7 @@ async function startCheckout() {
       onAdditionalDetails: handleAdditionalDetails,
     });
 
-    const dropin = new Dropin(checkout, {
-      paymentMethodsConfiguration: getPaymentMethodsConfiguration(),
-    });
+    const dropin = new Dropin(checkout, dropinConfiguration());
 
     dropin.mount("#dropin-container");
   } catch (error) {
@@ -81,19 +86,20 @@ async function handleSubmit(state, component, actions) {
   try {
     if (state.isValid) {
       const selectedCountry = countryDropdown.value;
-      const selectedCurrency = countryDropdown.options[countryDropdown.selectedIndex].getAttribute(
-        "data-currency"
-      );
+      const selectedCurrency =
+        countryDropdown.options[countryDropdown.selectedIndex].getAttribute(
+          "data-currency"
+        );
       state.countryCode = selectedCountry;
-      state.amount = { currency: selectedCurrency, value: 1010 };
-      state.paymentMethod = state.data.paymentMethod
+      state.amount = { currency: selectedCurrency, value: 5995 };
+      state.paymentMethod = state.data.paymentMethod;
 
       const payload = {
-        ...state
+        ...state,
       };
 
       console.log("payload", payload);
-      
+
       const { action, order, resultCode } = await fetch("/api/payments", {
         method: "POST",
         // body: state.data ? JSON.stringify(state.data) : "",
@@ -174,34 +180,40 @@ function handleOnPaymentFailed(resultCode) {
 }
 
 // === PAYMENT CONFIGURATION ===
-function getPaymentMethodsConfiguration() {
+function dropinConfiguration() {
   return {
-    paypal: {
-      merchantId: "RNG2L39A5QQQE",
-      intent: "authorize",
-    },
-    storedCard: {
-      hideCVC: false,
-    },
-    showStoredPaymentMethods: true,
-    card: {
-      billingAddressRequired: false,
-      showBrandIcon: true,
-      hasHolderName: false,
-      holderNameRequired: false,
-      name: "Credit or debit card",
-      enableStoreDetails: true,
-      showStorePaymentField: true,
-      placeholders: {
-        cardNumber: "1234 5678 9012 3456",
-        expiryDate: "MM/YY",
-        securityCodeThreeDigits: "123",
-        securityCodeFourDigits: "1234",
-        holderName: "J. Smith",
+    paymentMethodsConfiguration: {
+      paypal: {
+        merchantId: "L89RAC3HBQU9G",
+        intent: "capture",
       },
-      onBinLookup: (state) => console.log("onBinLookup", state),
-      onBinValue: (state) => console.log("onBinValue", state),
-      onFieldValid: (state) => console.log("onFieldValid", state),
+      storedCard: {
+        hideCVC: false,
+      },
+      showStoredPaymentMethods: true,
+      card: {
+        clickToPayConfiguration: {
+          merchantDisplayName: "TestCompany_ValeriaFurinUC_TEST",
+          shopperEmail: "valeria.furin@adyen.com",
+        },
+        billingAddressRequired: false,
+        showBrandIcon: true,
+        hasHolderName: true,
+        holderNameRequired: false,
+        name: "Credit or debit card",
+        enableStoreDetails: true,
+        showStorePaymentField: true,
+        placeholders: {
+          cardNumber: "1234 5678 9012 3456",
+          expiryDate: "MM/YY",
+          securityCodeThreeDigits: "123",
+          securityCodeFourDigits: "1234",
+          holderName: "J. Smith",
+        },
+        onBinLookup: (state) => console.log("onBinLookup", state),
+        onBinValue: (state) => console.log("onBinValue", state),
+        onFieldValid: (state) => console.log("onFieldValid", state),
+      },
     },
   };
 }
