@@ -12,6 +12,8 @@ const {
   SepaDirectDebit,
   Klarna,
   RatePay,
+  Riverty,
+  Blik,
   OnlineBankingPL,
 } = window.AdyenWeb;
 
@@ -49,6 +51,8 @@ async function startCheckout() {
       }),
     }).then((res) => res.json());
 
+    console.log("paymentsmethodresponse", paymentMethodsResponse);
+    
     const checkout = await AdyenCheckout({
       paymentMethodsResponse,
       clientKey,
@@ -185,7 +189,7 @@ function dropinConfiguration() {
     paymentMethodsConfiguration: {
       paypal: {
         merchantId: "L89RAC3HBQU9G",
-        intent: "capture",
+        intent: "authorize",
       },
       storedCard: {
         hideCVC: false,
