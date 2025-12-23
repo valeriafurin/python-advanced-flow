@@ -1,5 +1,5 @@
 from flask import jsonify, request, redirect, url_for
-from adyen_service import get_payment_methods, make_payment, handle_payment_details
+from adyen_service import get_payment_methods, make_payment, handle_payment_details, create_adyen_session
 
 
 def payment_methods():
@@ -33,6 +33,15 @@ def payment_details():
         print("Error retrieving payment details:", e)
         return jsonify({"error": "Failed to retrieve payment details"}), 500
 
+def adyen_sessions():
+    payload = request.get_json()
+    try:            
+        result = create_adyen_session()
+        return jsonify(result)
+    except Exception as e:
+        print("Error creating Adyen session:", e)
+        return jsonify({"error": "Failed to create Adyen session"}), 500
+
 
 def result_return():
     redirect_result = request.args.get("redirectResult")
@@ -48,6 +57,8 @@ def result_return():
 
     try:
         result = handle_payment_details(details_request)
+        print(f"!!!!payment_detail_response", result)
+        
         result_code = result.get("resultCode", "ERROR")
 
         if result_code == "Authorised":

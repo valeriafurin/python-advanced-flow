@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, jsonify
-from adyen_handlers import payment_methods, payments, payment_details, result_return
+from adyen_handlers import payment_methods, payments, payment_details, result_return, adyen_sessions
+from adyen_service import create_adyen_session
 from main.config import *
 from urllib.parse import unquote
 import logging
@@ -61,6 +62,14 @@ def create_app():
     def dropin():
         return render_template('dropin.html', client_key=get_adyen_client_key())
 
+    @app.route('/api/sessions', methods=['POST'])
+    def sessions_route():
+        return adyen_sessions()
+
+    @app.route('/session-flow')
+    def sessionFlow():
+        return render_template('session-flow.html', client_key=get_adyen_client_key())
+
     @app.route('/components')
     def components():
         return render_template('components.html', client_key=get_adyen_client_key())
@@ -77,11 +86,9 @@ def create_app():
     def payments_route():
         return payments()
 
-
     @app.route('/api/payments/details', methods=['POST'])
     def payments_details_route():
         return payment_details()
-
 
     @app.route('/result/return')
     def result_return_route():
